@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Keuangan</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+        .time-bar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 14px;
+            background: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            color: #343a40;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            text-align: left;
+        }
+        select, input, button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="time-bar" id="time-bar"></div>
+    <div class="container">
+        <h2>Laporan Keuangan</h2>
+        <label for="tanggal">Tanggal:</label>
+        <input type="text" id="tanggal" readonly>
+        <label for="jenis">Jenis:</label>
+        <select id="jenis">
+            <option value="Pemasukan">Pemasukan</option>
+            <option value="Pengeluaran">Pengeluaran</option>
+        </select>
+        <label for="jumlah">Jumlah (Rp):</label>
+        <input type="number" id="jumlah" placeholder="Masukkan jumlah" required>
+        <label for="deskripsi">Deskripsi:</label>
+        <input type="text" id="deskripsi" placeholder="Deskripsi transaksi" required>
+        <button onclick="kirimLaporan()">Kirim</button>
+    </div>
+    
+    <script>
+        function updateTimeBar() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('time-bar').textContent = timeString;
+        }
+        setInterval(updateTimeBar, 1000);
+        updateTimeBar();
+        
+        function setTanggal() {
+            const today = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('tanggal').value = today;
+        }
+        setTanggal();
+        
+        function kirimLaporan() {
+            const jenis = document.getElementById('jenis').value;
+            const jumlah = document.getElementById('jumlah').value;
+            const deskripsi = document.getElementById('deskripsi').value;
+            const tanggal = document.getElementById('tanggal').value;
+            
+            if (!jumlah || !deskripsi) {
+                Swal.fire('Error', 'Harap isi semua data!', 'error');
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Sedang Diproses',
+                text: 'Mohon tunggu 5 detik...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            setTimeout(() => {
+            const token = "7804694472:AAEMFQl93uRGITzkKpPNqXxD03wrz0gXAXg"; // Ganti dengan token bot Telegram
+            const chatId = "6450551010"; // Ganti dengan ID admin Telegram
+                
+                const pesan = `📊 Laporan Keuangan\nTanggal: ${tanggal}\nJenis: ${jenis}\nJumlah: Rp${jumlah}\nDeskripsi: ${deskripsi}`;
+                
+                fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatId, text: pesan })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.ok) {
+                          Swal.fire('Sukses', 'Laporan berhasil dikirim!', 'success');
+                          document.getElementById('jenis').value = "Pemasukan";
+                          document.getElementById('jumlah').value = "";
+                          document.getElementById('deskripsi').value = "";
+                      } else {
+                          Swal.fire('Error', 'Gagal mengirim laporan!', 'error');
+                      }
+                  })
+                  .catch(error => Swal.fire('Error', 'Terjadi kesalahan!', 'error'));
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
